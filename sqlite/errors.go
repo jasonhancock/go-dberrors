@@ -19,6 +19,7 @@ type Err struct {
 }
 
 var conflicterCodes = map[int]struct{}{
+	sqlite3.SQLITE_CONSTRAINT_CHECK:      {},
 	sqlite3.SQLITE_CONSTRAINT_PRIMARYKEY: {},
 	sqlite3.SQLITE_CONSTRAINT_UNIQUE:     {},
 }
