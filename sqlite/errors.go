@@ -25,6 +25,7 @@ var conflicterCodes = map[int]struct{}{
 }
 
 var retryableCodes = map[int]struct{}{
+	sqlite3.SQLITE_BUSY:       {},
 	sqlite3.SQLITE_LOCKED:     {},
 	sqlite3.SQLITE_STATE_BUSY: {},
 }
