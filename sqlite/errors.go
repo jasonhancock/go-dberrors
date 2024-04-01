@@ -16,12 +16,16 @@ type Err struct {
 	notFound  bool
 	conflict  bool
 	retryable bool
+	exists    bool
+}
+
+var existerCodes = map[int]struct{}{
+	sqlite3.SQLITE_CONSTRAINT_PRIMARYKEY: {},
+	sqlite3.SQLITE_CONSTRAINT_UNIQUE:     {},
 }
 
 var conflicterCodes = map[int]struct{}{
-	sqlite3.SQLITE_CONSTRAINT_CHECK:      {},
-	sqlite3.SQLITE_CONSTRAINT_PRIMARYKEY: {},
-	sqlite3.SQLITE_CONSTRAINT_UNIQUE:     {},
+	sqlite3.SQLITE_CONSTRAINT_CHECK: {},
 }
 
 var retryableCodes = map[int]struct{}{
@@ -45,6 +49,7 @@ func NewError(resource string, err error) error {
 		code := slErr.Code()
 		_, e.conflict = conflicterCodes[code]
 		_, e.retryable = retryableCodes[code]
+		_, e.exists = existerCodes[code]
 	}
 
 	return &e
@@ -63,6 +68,10 @@ func (c Err) NotFound() bool {
 
 func (c Err) Conflict() bool {
 	return c.conflict
+}
+
+func (c Err) Exists() bool {
+	return c.exists
 }
 
 func (c *Err) Unwrap() error {
