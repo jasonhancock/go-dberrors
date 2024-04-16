@@ -16,6 +16,7 @@ type Err struct {
 	notFound  bool
 	conflict  bool
 	retryable bool
+	exists    bool
 }
 
 func NewError(resource string, err error) error {
@@ -31,7 +32,11 @@ func NewError(resource string, err error) error {
 
 	var slErr sqlite3.Error
 	if errors.As(err, &slErr) {
-		e.conflict = slErr.Code == sqlite3.ErrConstraint
+		if slErr.Code == sqlite3.ErrConstraint && slErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			e.exists = true
+		} else {
+			e.conflict = slErr.Code == sqlite3.ErrConstraint
+		}
 		e.retryable = slErr.Code == sqlite3.ErrLocked || slErr.Code == sqlite3.ErrBusy
 	}
 
@@ -59,4 +64,8 @@ func (c *Err) Unwrap() error {
 
 func (c *Err) Retry() bool {
 	return c.retryable
+}
+
+func (c Err) Exists() bool {
+	return c.exists
 }
